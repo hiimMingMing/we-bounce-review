@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+
+        <title>Cocos Creator | mytel-up</title>
+
+        <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+        <meta
+            name="viewport"
+            content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"
+        />
+
+        <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="format-detection" content="telephone=no" />
+
+        <!-- force webkit on 360 -->
+        <meta name="renderer" content="webkit" />
+        <meta name="force-rendering" content="webkit" />
+        <!-- force edge on IE -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta name="msapplication-tap-highlight" content="no" />
+
+        <!-- force full screen on some browser -->
+        <meta name="full-screen" content="yes" />
+        <meta name="x5-fullscreen" content="true" />
+        <meta name="360-fullscreen" content="true" />
+
+        <!-- force screen orientation on some browser -->
+        <meta name="screen-orientation" content="portrait" />
+        <meta name="x5-orientation" content="portrait" />
+
+        <!--fix fireball/issues/3568 -->
+        <!--<meta name="browsermode" content="application">-->
+        <meta name="x5-page-mode" content="app" />
+
+        <!--<link rel="apple-touch-icon" href=".png" />-->
+        <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+
+        <link rel="stylesheet" type="text/css" href="style.css" />
+    </head>
+    <body>
+        <canvas
+            id="GameCanvas"
+            oncontextmenu="event.preventDefault()"
+            tabindex="0"
+        ></canvas>
+        <div
+            id="api-loading"
+            style="
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 9999;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                font-size: 18px;
+                pointer-events: all;
+            "
+        >
+            <div class="bouncing-ball"></div>
+            <div class="ball-shadow"></div>
+        </div>
+
+        <div
+            id="game-loading"
+            style="
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: url('loading-background.jpg');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                z-index: 10000;
+                color: white;
+                font-family: Arial, sans-serif;
+                pointer-events: all;
+            "
+        >
+            <div class="loading-content">
+                <div class="loading-text" id="loadingText">Loading...</div>
+            </div>
+        </div>
+        <style>
+            @font-face {
+                font-family: 'CustomFont';
+                src: url('./font.ttf') format('truetype');
+                font-display: swap;
+                font-weight: normal;
+                font-style: normal;
+            }
+
+            .bouncing-ball {
+                width: 80px;
+                height: 80px;
+                background-image: url('ball_5.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                animation: bounceBall 1.2s infinite ease-in-out;
+                position: relative;
+                z-index: 2;
+            }
+
+            .loading-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+                position: absolute;
+                top: 60%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .game-loading-ball {
+                width: 80px;
+                height: 80px;
+                background-image: url('ball_5.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                animation: gameBounceBall 1.2s infinite ease-in-out;
+                position: relative;
+                z-index: 2;
+            }
+
+            .game-ball-shadow {
+                position: absolute;
+                top: calc(50% + 20px);
+                left: 50%;
+                width: 100px;
+                height: 20px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 50%;
+                transform: translateX(-50%);
+                animation: gameShadowBounce 1.2s infinite ease-in-out;
+                z-index: 1;
+            }
+
+            .loading-text {
+                font-family: 'CustomFont', Arial, sans-serif;
+                font-size: 25px;
+                color: #9a6b3f;
+                font-weight: bold;
+                letter-spacing: 2px;
+                animation: loadingPulse 1.5s ease-in-out infinite;
+            }
+
+            @keyframes loadingPulse {
+                0%,
+                100% {
+                    opacity: 0.7;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.05);
+                }
+            }
+
+            @keyframes gameBounceBall {
+                0%,
+                100% {
+                    transform: translateY(0) scaleY(0.7) scaleX(1.2);
+                    animation-timing-function: ease-in;
+                }
+                5% {
+                    transform: translateY(-20px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                10% {
+                    transform: translateY(-100px) scaleY(1.2) scaleX(0.8);
+                    animation-timing-function: ease-in;
+                }
+                30% {
+                    transform: translateY(-200px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                70% {
+                    transform: translateY(-180px) scaleY(1.05) scaleX(0.95);
+                    animation-timing-function: ease-in;
+                }
+                90% {
+                    transform: translateY(-100px) scaleY(1.2) scaleX(0.8);
+                    animation-timing-function: ease-in;
+                }
+                95% {
+                    transform: translateY(0px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                100% {
+                    transform: translateY(0) scaleY(0.7) scaleX(1.2);
+                    animation-timing-function: ease-in;
+                }
+            }
+
+            @keyframes gameShadowBounce {
+                0%,
+                100% {
+                    transform: translateX(-50%) scaleX(1.2);
+                    opacity: 0.8;
+                }
+                5% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.7;
+                }
+                10% {
+                    transform: translateX(-50%) scaleX(0.8);
+                    opacity: 0.5;
+                }
+                30% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.3;
+                }
+                70% {
+                    transform: translateX(-50%) scaleX(0.95);
+                    opacity: 0.35;
+                }
+                90% {
+                    transform: translateX(-50%) scaleX(0.8);
+                    opacity: 0.5;
+                }
+                95% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.7;
+                }
+            }
+
+            .ball-shadow {
+                position: absolute;
+                top: calc(50% + 20px);
+                left: 50%;
+                width: 100px;
+                height: 20px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 50%;
+                transform: translateX(-50%);
+                animation: shadowBounce 1.2s infinite ease-in-out;
+                z-index: 1;
+            }
+
+            @keyframes bounceBall {
+                0%,
+                100% {
+                    transform: translateY(0) scaleY(0.7) scaleX(1.2);
+                    animation-timing-function: ease-in;
+                }
+                5% {
+                    transform: translateY(-20px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                10% {
+                    transform: translateY(-100px) scaleY(1.2) scaleX(0.8);
+                    animation-timing-function: ease-in;
+                }
+                30% {
+                    transform: translateY(-200px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                70% {
+                    transform: translateY(-180px) scaleY(1.05) scaleX(0.95);
+                    animation-timing-function: ease-in;
+                }
+                90% {
+                    transform: translateY(-100px) scaleY(1.2) scaleX(0.8);
+                    animation-timing-function: ease-in;
+                }
+                95% {
+                    transform: translateY(0px) scaleY(1) scaleX(1);
+                    animation-timing-function: ease-in;
+                }
+                100% {
+                    transform: translateY(0) scaleY(0.7) scaleX(1.2);
+                    animation-timing-function: ease-in;
+                }
+            }
+
+            @keyframes shadowBounce {
+                0%,
+                100% {
+                    transform: translateX(-50%) scaleX(1.2);
+                    opacity: 0.8;
+                }
+                5% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.7;
+                }
+                10% {
+                    transform: translateX(-50%) scaleX(0.8);
+                    opacity: 0.5;
+                }
+                30% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.3;
+                }
+                70% {
+                    transform: translateX(-50%) scaleX(0.95);
+                    opacity: 0.35;
+                }
+                90% {
+                    transform: translateX(-50%) scaleX(0.8);
+                    opacity: 0.5;
+                }
+                95% {
+                    transform: translateX(-50%) scaleX(1);
+                    opacity: 0.7;
+                }
+            }
+        </style>
+
+        <script>
+            // Game loading functionality
+            (function () {
+                const gameLoadingScreen =
+                    document.getElementById('game-loading');
+                const loadingText = document.getElementById('loadingText');
+
+                let isGameLoaded = false;
+
+                // Simplified loading - no progress bar needed
+                function startLoading() {
+                    loadingText.textContent = 'Loading...';
+                }
+
+                // Global callback for when game finishes loading
+                window.onGameLoaded = function () {
+                    if (isGameLoaded) return; // Prevent multiple calls
+
+                    isGameLoaded = true;
+                    console.log('Game loaded, hiding loading screen...');
+
+                    hideGameLoading();
+                };
+
+                function hideGameLoading() {
+                    gameLoadingScreen.style.transition =
+                        'opacity 0.5s ease-out';
+                    gameLoadingScreen.style.opacity = '0';
+
+                    setTimeout(() => {
+                        gameLoadingScreen.style.display = 'none';
+                    }, 500);
+                }
+
+                function showGameLoading() {
+                    gameLoadingScreen.style.display = 'flex';
+                    gameLoadingScreen.style.opacity = '1';
+                    isGameLoaded = false;
+
+                    // Reset loading text
+                    loadingText.textContent = 'Loading...';
+
+                    // Start loading
+                    setTimeout(startLoading, 100);
+                }
+
+                // Initialize loading screen on page load
+                document.addEventListener('DOMContentLoaded', function () {
+                    showGameLoading();
+                });
+
+                // Expose functions globally if needed
+                window.showGameLoading = showGameLoading;
+                window.hideGameLoading = hideGameLoading;
+            })();
+        </script>
+
+        
+<!-- Polyfills bundle. -->
+<script src="src/polyfills.bundle.js" charset="utf-8"> </script>
+
+<!-- SystemJS support. -->
+<script src="src/system.bundle.js" charset="utf-8"> </script>
+
+<!-- Import map -->
+<script src="src/import-map.json" type="systemjs-importmap" charset="utf-8"> </script>
+
+<script>
+    System.import('./index.js').catch(function(err) { console.error(err); })
+</script>
+
+    </body>
+</html>
